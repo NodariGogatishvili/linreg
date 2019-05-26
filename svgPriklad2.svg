@@ -1,0 +1,53 @@
+<svg width="1200" height="1200" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
+  <!--background-->
+  <rect x="0" y="0" width="1200" height="1200" style="fill:#4bf"/>
+  <rect x="100" y="100" width="1000" height="1000" style="fill:rgb(40,100,255)"/>
+
+   <!--dots in order-->
+  <rect transform="translate(101.43 713.85) rotate(45)" width="10" height="10" style="paint-order:normal"/>
+  <rect x="346.43" y="600.27" width="10" height="10"/>
+  <rect x="483.57" y="521.7" width="10" height="10" style="fill:red;stroke-width:1px;stroke:green;"/>
+  <rect x="579.29" y="617.42" width="10" height="10"/>
+  <rect style="width:10;height:10;transform:translate(719.29px, 531.7px) rotate(45deg)"/>
+  <rect x="845" y="421.7" width="10" height="10"/>
+  <rect x="989.29" y="563.13" width="10" height="10" style="width:10;height:10"/>
+  <circle cx="250" cy="600" r="5" stroke="rgb(255,150,0)" stroke-width="3" fill="black" />
+  
+  <!--linear regresion-->
+  <path d="m 100 800 1000 -400" style="fill:none;stroke-width:1px;stroke:#000"/>
+ 
+  <!--equation-->
+  <text x="500" y="50"  style="fill:green;font-size:20pt;font-family:sans-serif">y = 3/5x + 0</text>
+ 
+   <!--axis x-->
+  <path d="m 100 1100 1000 0" style="fill:none;stroke-width:2px;stroke:#000"/>
+  <text x="1100" y="1150" style="fill:black;font-size:25px;font-family:sans-serif">x</text>
+  <path d="m1090 1090 10 10 -10 10 " style="fill:none;stroke-width:2px;stroke:black" />
+
+  <!--axis y-->
+  <path d="m 100 1100 0 -1000" style="fill:none;stroke-width:2px;stroke:#000"/>
+  <text x="50" y="100" style="fill:black;font-size:25px;font-family:sans-serif">y</text>
+  <path d="m90 110 10 -10 10 10 " style="fill:none;stroke-width:2px;stroke:black" />
+
+  <!-- axis numbering x in order-->
+  <path d="m 200 1090 0 20" style="fill:none;stroke-width:2px;stroke:#555"/>
+  <path d="m 200 100 0 1000" style="fill:none;stroke-width:1px;stroke:#000;stroke-dasharray:4 1 2 3"/>
+  <text x="180" y="1150"  style="fill:black;font-size:25px;font-family:sans-serif">100</text>
+  <path d="m 300 1090 0 20" style="fill:none;stroke-width:2px;stroke:#000"/>
+  <path d="m 300 100 0 1000" style="fill:none;stroke-width:1px;stroke:#000;stroke-dasharray:1 1"/>
+  <text x="280" y="1150"  style="fill:black;font-size:25px;font-family:sans-serif">200</text>
+  <path d="m 400 1090 0 20" style="fill:none;stroke-width:2px;stroke:#000"/>
+  <path d="m 400 100 0 1000" style="fill:none;stroke-width:1px;stroke:#000"/>
+  <text x="380" y="1150"  style="fill:black;font-size:25px;font-family:sans-serif">300</text>
+ 
+  <!-- axis numbering y -->
+  <path d="m 90 1000 10 0" style="fill:none;stroke-width:2px;stroke:#555"/>
+  <path d="m 90 1000 1000 0" style="fill:none;stroke-width:1px;stroke:#000;stroke-dasharray:4 1 2 3"/>
+  <text x="20" y="1000"  style="fill:black;font-size:25px;font-family:sans-serif">100</text>
+  <path d="m 90 900 10 0" style="fill:none;stroke-width:2px;stroke:#000"/>
+  <path d="m 90 900 1000 0" style="fill:none;stroke-width:1px;stroke:#000;stroke-dasharray:1 1"/>
+  <text x="20" y="900"  style="fill:black;font-size:25px;font-family:sans-serif">200</text>
+  <path d="m 90 800 10 0" style="fill:none;stroke-width:2px;stroke:#000"/>
+  <path d="m 90 800 1000 0" style="fill:none;stroke-width:1px;stroke:#000"/>
+  <text x="20" y="800"  style="fill:black;font-size:25px;font-family:sans-serif">300</text>  
+</svg>

@@ -80,7 +80,65 @@ place(){
 	:	
 }
 
-MultipleMatcies(){
+transpon(){
+	tSize=`echo "$1" | head -1 |  wc -w`
+	for i in $(seq 1 $tSize); do
+		echo "$1" |
+		while read -r line; do
+			tmp=`echo "$line" | cut -f$i -d' '`
+			if [ -n "$row" ]; then
+				row="$row" "$tmp"
+			else
+				row="$tmp"
+			fi
+		done
+		if [ -n "$M" ]; then
+			M="$M\n$row"
+		else
+			M="$row"
+		fi
+		row=""
+	done
+	echo "$M"
+	M=""
+}
+
+multiply(){
+	paste <(echo "$1" | tr ' ' '\n') <(echo "$2" | tr ' ' '\n') | tr '\t' '*' |
+		paste -s -d+ | bc
+}
+
+row(){
+	echo "$2" |
+	while read -r rLine; do
+		tmp=`multiply "$1" "$rLine"`
+		if [ -n "$row" ]; then
+			row="$row" "$tmp"
+		else
+			row="$tmp"
+		fi
+	done
+	echo "$row"
+	row=""
+}
+
+multipleMatcies(){
+	n=`echo "$1" | wc -l`
+	m=`echo "$1" | head -1 | wc -w`
+	M2=`transpon "$2"`
+	while read -r mLine; do
+		tmp=`row "$mLine" "$M2"`
+		if [ -n "$row" ]; then
+			row="$row\n$tmp"
+		else
+			row="$tmp"
+		fi
+	done
+	echo "$row"
+	row=""
+}
+
+invert(){
 	:
 }
 
