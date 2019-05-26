@@ -146,6 +146,10 @@ drawLine(){
 	:
 }
 
+drawSVG(){
+	:
+}
+
 minmax < $1
 
 exit
