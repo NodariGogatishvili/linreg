@@ -295,11 +295,42 @@ drawSVG(){
 	' > "$out"
 }
 
+axisNumbering(){
+	echo "  <!-- axis numbering x in order-->"
+	for i in (seq 1 10); do
+	echo "
+	<path d=\"m $(($i*100+100)) 1090 0 20\" style=\"fill:none;stroke-width:2px;stroke:#000\"/>
+	<path d=\"m $(($i*100+100))  100 0 1000\" style=\"fill:none;stroke-width:1px;stroke:#000\"/>
+	<text x=\"$(($i*100+80))\" y=\"1150\"  style=\"fill:black;font-size:25px;font-family:sans-serif\">300</text>
+"
+	done
+	echo "  <!-- axis numbering y in order-->"
+	for i in (seq 1 10); do
+	echo "
+	<path d=\" 90 $((1100-$i*100)) 10 0\" style=\"fill:none;stroke-width:2px;stroke:#000\"/>
+	<path d=\"m 90 $((1100-$i*100)) 1000 0\" style=\"fill:none;stroke-width:1px;stroke:#000\"/>
+	<text x=\"20\" y=\"$((1100-$i*100))\"  style=\"fill:black;font-size:25px;font-family:sans-serif\">300</text>
+"
+	done
+}
+
+placeDots(){
+	read line
+	echo "   <!--dots in order-->"
+	while read -r line; do
+		tmpX=`echo "$line" | cut -f1 -d' '`
+		tmpY=`echo "$line" | cut -f2 -d' '`
+echo "<rect transform=\"translate($((100+$tmpX/$maxX*1000)) $((1000-$tmpY/$maxY*1000))) rotate(45)\" width=\"10\" height=\"10\" style=\"paint-order:normal\"/>"
+	done
+}
+
 minmax < $1
 
 out="out.svg"
 
 drawSVG
+axisNumbering
+placeDots < $1
 drawLine "$1"
 echo "</svg>" >> "$out"
 
