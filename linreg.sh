@@ -87,7 +87,7 @@ transpon(){
 		while read -r line; do
 			tmp=`echo "$line" | cut -f$i -d' '`
 			if [ -n "$row" ]; then
-				row="$row" "$tmp"
+				row="$row $tmp"
 			else
 				row="$tmp"
 			fi
@@ -104,8 +104,10 @@ transpon(){
 }
 
 multiply(){
-	paste <(echo "$1" | tr ' ' '\n') <(echo "$2" | tr ' ' '\n') | tr '\t' '*' |
-		paste -s -d+ | bc
+        echo "$1" | tr ' ' '\n' > tmpRow1
+        echo "$2" | tr ' ' '\n' > tmpRow2
+        paste tmpRow2 tmpRow1 | tr '\t' '*' | paste -s -d+ | bc
+        rm tmpRow1 tmpRow2
 }
 
 row(){
@@ -113,7 +115,7 @@ row(){
 	while read -r rLine; do
 		tmp=`multiply "$1" "$rLine"`
 		if [ -n "$row" ]; then
-			row="$row" "$tmp"
+			row="$row $tmp"
 		else
 			row="$tmp"
 		fi
@@ -126,6 +128,7 @@ multipleMatcies(){
 	n=`echo "$1" | wc -l`
 	m=`echo "$1" | head -1 | wc -w`
 	M2=`transpon "$2"`
+	echo "$1" |
 	while read -r mLine; do
 		tmp=`row "$mLine" "$M2"`
 		if [ -n "$row" ]; then
@@ -138,7 +141,97 @@ multipleMatcies(){
 	row=""
 }
 
+substractRow(){
+        echo "$1" | tr ' ' '\n' > tmpRow1
+        echo "$2" | tr ' ' '\n' > tmpRow2
+        paste tmpRow2 tmpRow1 | tr '\t' '-' | bc | paste -s -d' '
+        rm tmpRow1 tmpRow2
+}
+
+scalarXvector(){
+	echo "$2" | tr ' ' '\n' | sed 's/$/'*$1'/' | bc | paste -s -d' '
+}
+
+substractByPivot(){
+	tmpA=`echo "$1" | cut -f$3 -d' '`
+	tmpB=`echo "$2" | cut -f$3 -d' '`
+	tmpAmount=$(($tmpB/$tmpA))
+	if [ $? -ne 0 ]; then
+		tmpAmount="0"
+	fi
+	tmpV1=`scalarXvector $tmpAmount "$1"`
+	substractRow "$tmpV1" "$2"
+}
+
+gausElimination(){
+	i=1;
+	echo "$1" | 
+	while read -r aLine; do
+		echo "$1" | tail -n +$(($i+1)) | 
+		while read -r bLine; do
+			substractByPivot "$aLine" "$bLine" "$i"	
+		done
+		i=$(($i+1))
+	done
+}
+
+gausJordan(){
+	gaus=`gausElimination $1`
+
+	i=1
+	echo "$gaus" |
+	while read -r aLine; do
+		tmp=`echo "$aLine" | cut -f$i -d' '`
+		if [ $tmp -ne 0 ]; then
+			scalarXvector $((1/$tmp)) "$aLine"
+		else
+			scalarCvector 0 "$aLine"
+		fi
+		i=$(($i+1))
+	done
+
+	i=`echo "$1" | head -1 | wc -w`
+	echo "$gaus" |
+	while read -r aLine; do
+		echo "$gaus" | head -$((i-1)) |
+		while read -r bLine; do
+			substractByPivot "$aLine" "$bLine" $i
+		done
+		i=$(($i-1))
+	done
+}
+
+identity(){
+        for i in $(seq 1 $1); do
+                for j in $(seq 1 $2); do
+                        if [ $i -eq $j ]; then
+                                tmp="1"
+                        else
+                                tmp="0"
+                        fi
+                        if [ -n "$row" ]; then
+                                row="$row $tmp"
+                        else
+                                row="$tmp"
+                        fi
+                done
+                echo "$row"
+                row=""
+        done
+}
+
 invert(){
+	tmpN=`echo "$1" | wc -l`
+	tmpM=`echo "$1" | head -1 | wc -w`
+
+	echo "$1" > tmpA
+	identity $tmpN $tmpM > tmpB
+	tmpMatrix=`paste tmpA tmpB`
+	tmpMatrix=`gausJordan "$tmpMatrix"`
+	echo "$tmpMatrix" | cut -f$(($tmpM+1)) -d' '
+}
+
+regresion(){
 	:
 }
 
