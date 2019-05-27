@@ -301,11 +301,14 @@ drawLine(){
 	xT=`transpon "$x"`
 	firstY=`multiplyMatrices "$xT" "$minX\n1"`
 	secondY=`multiplyMatrices "$xT" "$maxX\n1"`
-	firstY=`echo "scale=20; 1000-$firstY/$maxY*1000" | sed 's/--/+/' | bc`
-	secondY=`echo "scale=20; (-1)*$secondY/$maxY*1000" | bc`
+	secondY=`echo "scale=20; (-1)*($secondY-$firstY)/$maxY*1000" | bc`
+	firstY=`echo "scale=20; 1200-$firstY/$maxY*1000" | sed 's/--/+/' | bc`
+	
+	equ=`echo "$xT" | sed 's/\(.*\) \(.*\)/y=\1x + \2/' | sed 's/+ -/- /' | sed 's/ \./ 0./'`
+	echo "<text x=\"300\" y=\"50\" style=\"fill:black;font-size:22px;font-family:sans-serif\">$equ</text>"
 	echo "
 	<path d=\"m 100 $firstY 1000 $secondY \" style=\"fill:none;stroke-width:1px;stroke:#000\"/>
-	" >> "$out"
+	"
 }
 
 drawSVG(){
