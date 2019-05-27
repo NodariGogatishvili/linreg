@@ -75,11 +75,6 @@ minmax(){
 	done
 }
 
-
-place(){
-	:	
-}
-
 transpon(){
 	tSize=`echo "$1" | head -1 |  wc -w`
 	for i in $(seq 1 $tSize); do
@@ -124,7 +119,7 @@ row(){
 	row=""
 }
 
-multipleMatcies(){
+multiplyMatcies(){
 	n=`echo "$1" | wc -l`
 	m=`echo "$1" | head -1 | wc -w`
 	M2=`transpon "$2"`
@@ -229,6 +224,7 @@ invert(){
 	tmpMatrix=`paste tmpA tmpB`
 	tmpMatrix=`gaussJordan "$tmpMatrix"`
 	echo "$tmpMatrix" | cut -f$(($tmpM+1)) -d' '
+	rm tmpA tmpB
 }
 
 regresion(){
@@ -240,15 +236,72 @@ regresion(){
 	echo "$ATA1ATb"
 }
 
+exponets(){
+        echo "$1" | tr ' ' '\n' |
+        while read -r exLine; do
+                echo "$exLine" | sed 's/$/'^$(($i-1))'/' | bc
+                i=$(($i-1))
+        done
+}
+
+
+ColumnExponention(){
+	echo "$1" |
+        while read -r eLine; do
+                i=`echo "$eLine" | wc -w`
+                exponets "$eLine" $i | paste -s -d' '
+        done
+
+}
+
+matrixForLinReg(){
+	cat "$1" | tail -n +2 | cut -f1 -d' ' > tmpA
+	MfLR=`paste tmpA tmpA`
+	columnExponention "$MfLR"
+	rm tmpA tmpB
+}
+
 drawLine(){
-	:
+	A=`matrixForLinReg "$1"`
+	b=`cat "$1" | tail -n +2 | cut -f2 -d' '`
+	x=`regresion "$A" "$b"`
+	xT=`transpon "$x"`
+	firstY=`multiplyMatrices "$xT" "$minX 1"`
+	secondY=`multiplyMatrices "$xT" "$maxX 1"`
+	
+	firstY=$((1000-$firstY/$maxY*1000))
+	secondY=$(((-1)*$secondY/$maxY*1000))
+	echo "
+	<path d=\"m 100 $firstY 1000 $secondY \" style=\"fill:none;stroke-width:1px;stroke:#000\"/>
+	" >> "$out"
 }
 
 drawSVG(){
-	:
+	echo '
+<svg width="1200" height="1200" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
+  <!--background-->
+  <rect x="0" y="0" width="1200" height="1200" style="fill:#fff"/>
+  <rect x="100" y="100" width="1000" height="1000" style="fill:#fff"/>
+   
+  <!--axis x-->
+  <path d="m 100 1100 1000 0" style="fill:none;stroke-width:2px;stroke:#000"/>
+  <text x="1100" y="1150" style="fill:black;font-size:25px;font-family:sans-serif">x</text>
+  <path d="m1090 1090 10 10 -10 10 " style="fill:none;stroke-width:2px;stroke:black" />
+
+  <!--axis y-->
+  <path d="m 100 1100 0 -1000" style="fill:none;stroke-width:2px;stroke:#000"/>
+  <text x="50" y="100" style="fill:black;font-size:25px;font-family:sans-serif">y</text>
+  <path d="m90 110 10 -10 10 10 " style="fill:none;stroke-width:2px;stroke:black" />
+	' > "$out"
 }
 
 minmax < $1
+
+out="out.svg"
+
+drawSVG
+drawLine "$1"
+echo "</svg>" >> "$out"
 
 exit
 while [ $# -ge 1 ]; do
