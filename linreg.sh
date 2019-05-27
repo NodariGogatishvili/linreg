@@ -77,8 +77,8 @@ minmax(){
 
 transpon(){
 	tSize=`echo "$1" | head -1 |  wc -w`
+	echo "$1" > mTrans
 	for i in $(seq 1 $tSize); do
-		echo "$1" |
 		while read -r line; do
 			tmp=`echo "$line" | cut -f$i -d' '`
 			if [ -n "$row" ]; then
@@ -86,21 +86,17 @@ transpon(){
 			else
 				row="$tmp"
 			fi
-			#echo "$row" >&2
-		done
-		#echo "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-		#echo "$row" >&2
-		# problem
-		if [ -n "$M" ]; then
-			M="$M\n$row"
+		done < mTrans
+		if [ -n "$Mat" ]; then
+			Mat="$Mat\n$row"
 		else
-			M="$row"
+			Mat="$row"
 		fi
-		echo "$M" >&2
 		row=""
 	done
-	echo "$M"
-	M=""
+	rm mTrans
+	echo "$Mat"
+	Mat=""
 }
 
 multiply(){
@@ -110,33 +106,35 @@ multiply(){
         rm tmpRow1 tmpRow2
 }
 
-row(){
-	echo "$2" |
+multiplyRow(){
+	echo "$2" > tmpFile
 	while read -r rLine; do
 		tmp=`multiply "$1" "$rLine"`
-		if [ -n "$row" ]; then
-			row="$row $tmp"
+		if [ -n "$row2" ]; then
+			row2="$row2 $tmp"
 		else
-			row="$tmp"
+			row2="$tmp"
 		fi
-	done
-	echo "$row"
-	row=""
+	done < tmpFile
+	rm tmpFile
+	echo "$row2"
+	row2=""
 }
 
 multiplyMatrices(){
 	n=`echo "$1" | wc -l`
 	m=`echo "$1" | head -1 | wc -w`
 	M2=`transpon "$2"`
-	echo "$1" |
+	echo "$1" > mMulti
 	while read -r mLine; do
-		tmp=`row "$mLine" "$M2"`
+		tmp=`multiplyRow "$mLine" "$M2"`
 		if [ -n "$row" ]; then
 			row="$row\n$tmp"
 		else
 			row="$tmp"
 		fi
-	done
+	done < mMulti
+	rm mMulti
 	echo "$row"
 	row=""
 }
@@ -155,7 +153,7 @@ scalarXvector(){
 substractByPivot(){
 	tmpA=`echo "$1" | cut -f$3 -d' '`
 	tmpB=`echo "$2" | cut -f$3 -d' '`
-	tmpAmount=$(($tmpB/$tmpA))
+	tmpAmount=`echo "scale=20; $tmpB/$tmpA" | bc`
 	if [ $? -ne 0 ]; then
 		tmpAmount="0"
 	fi
@@ -163,23 +161,24 @@ substractByPivot(){
 	substractRow "$tmpV1" "$2"
 }
 
+#problem
 gaussElimination(){
 	i=1;
-	echo "$1" | 
+	echo "$1" > mGauss
 	while read -r aLine; do
-		echo "$1" | tail -n +$(($i+1)) | 
+		echo "$1" | tail -n +$(($i+1)) > mGauss2
 		while read -r bLine; do
 			substractByPivot "$aLine" "$bLine" "$i"	
-		done
+		done < mGauss2
 		i=$(($i+1))
-	done
+	done < mGauss
+	rm mGauss mGauss2
 }
 
-gaussJordan(){
-	gauss=`gaussElimination $1`
-
+divMat(){
+	gauss=`gaussElimination "$1"`
 	i=1
-	echo "$gauss" |
+	echo "$gauss" > mDiv
 	while read -r aLine; do
 		tmp=`echo "$aLine" | cut -f$i -d' '`
 		if [ "$tmp" != "0" ]; then
@@ -189,17 +188,22 @@ gaussJordan(){
 			scalarXvector 0 "$aLine"
 		fi
 		i=$(($i+1))
-	done
+	done < mDiv
+	rm mDiv
+}
 
+gaussJordan(){
+	divGauss=`divMat "$1"`
 	i=`echo "$1" | head -1 | wc -w`
-	echo "$gauss" |
+	echo "$divGauss" > mGJ
 	while read -r aLine; do
-		echo "$gauss" | head -$(($i-1)) |
+		echo "$divGauss" | head -$(($i-1)) > mGJ2
 		while read -r bLine; do
 			substractByPivot "$aLine" "$bLine" $i
-		done
+		done < mGJ2
 		i=$(($i-1))
-	done
+	done < mGJ
+	rm mGJ mGJ2
 }
 
 identity(){
@@ -227,36 +231,43 @@ invert(){
 
 	echo "$1" > tmpA
 	identity $tmpN $tmpM > tmpB
-	tmpMatrix=`paste tmpA tmpB`
+	tmpMatrix=`paste tmpA tmpB -d' '`
+	echo "$tmpMatrix" >&2
 	tmpMatrix=`gaussJordan "$tmpMatrix"`
+	echo "$tmpMatrix" >&2
 	echo "$tmpMatrix" | cut -f$(($tmpM+1)) -d' '
 	rm tmpA tmpB
 }
 
 regresion(){
 	AT=`transpon "$1"`
+	echo "$AT" >&2
 	ATA=`multiplyMatrices "$AT" "$1"`
+	echo "$ATA" >&2
 	ATA1=`invert "$ATA"`
+	echo "$ATA1" >&2
 	ATA1AT=`multiplyMatrices "$ATA1" "$AT"`
 	ATA1ATb=`multiplyMatrices "$ATA1AT" "$2"`
 	echo "$ATA1ATb"
 }
 
 exponets(){
-        echo "$1" | tr ' ' '\n' |
+        echo "$1" | tr ' ' '\n' > mExp
         while read -r exLine; do
                 echo "$exLine" | sed 's/$/'^$(($i-1))'/' | bc
                 i=$(($i-1))
-        done
+        done < mExp
+	rm mExp
 }
 
 
 columnExponention(){
-	echo "$1" |
+	echo "$1" > mCol
         while read -r eLine; do
                 i=`echo "$eLine" | wc -w`
                 exponets "$eLine" $i | paste -s -d' '
-        done
+        done < mCol
+	rm mCol
 
 }
 
