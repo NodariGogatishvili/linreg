@@ -15,6 +15,16 @@ x            y
 2.5         6.25
 40          1600
 
+
+######################################333
+
+NO OPTIONS
+
+only input file
+
+###################################
+
+
 -r ad regresion curve
    r and r1 linear
 
@@ -142,7 +152,7 @@ multiplyMatrices(){
 substractRow(){
         echo "$1" | tr ' ' '\n' > tmpRow1
         echo "$2" | tr ' ' '\n' > tmpRow2
-        paste tmpRow2 tmpRow1 | tr '\t' '-' | bc | paste -s -d' '
+        paste tmpRow2 tmpRow1 -d- | sed 's/--/+/'| bc | paste -s -d' '
         rm tmpRow1 tmpRow2
 }
 
@@ -161,18 +171,22 @@ substractByPivot(){
 	substractRow "$tmpV1" "$2"
 }
 
-#problem
 gaussElimination(){
-	i=1;
-	echo "$1" > mGauss
-	while read -r aLine; do
-		echo "$1" | tail -n +$(($i+1)) > mGauss2
-		while read -r bLine; do
-			substractByPivot "$aLine" "$bLine" "$i"	
-		done < mGauss2
-		i=$(($i+1))
-	done < mGauss
-	rm mGauss mGauss2
+        i=1;
+        tmpN=`echo "$1" | wc -l`
+        echo "$1" > tmpGauss
+        for j in $(seq 1 $(($tmpN-1))); do
+                aLine=`cat tmpGauss | tail -n +$j | head -1`
+                echo "$aLine" > tmpGauss2
+                sed -i "1,${j}d" tmpGauss
+                while read -r bLine; do
+                        substractByPivot "$aLine" "$bLine" "$i" >>tmpGauss2
+                done < tmpGauss
+                cat tmpGauss2 > tmpGauss
+                i=$(($i+1))
+        done
+        cat tmpGauss
+        rm tmpGauss tmpGauss2
 }
 
 divMat(){
@@ -193,18 +207,25 @@ divMat(){
 }
 
 gaussJordan(){
-	divGauss=`divMat "$1"`
-	i=`echo "$1" | head -1 | wc -w`
-	echo "$divGauss" > mGJ
-	while read -r aLine; do
-		echo "$divGauss" | head -$(($i-1)) > mGJ2
-		while read -r bLine; do
-			substractByPivot "$aLine" "$bLine" $i
-		done < mGJ2
-		i=$(($i-1))
-	done < mGJ
-	rm mGJ mGJ2
+        divGauss=`divMat "$1"`
+        i=`echo "$1" | wc -l`;
+        tmpN=`echo "$1" | wc -l`
+        echo "$divGauss" > tmpGJ
+        for j in $(seq 1 $(($tmpN-1))); do
+                aLine=`cat tmpGJ | tail -n -$j | head -1`
+                sed -i "${i},${tmpN}d" tmpGJ
+                echo -n > tmpGJ2
+                while read -r bLine; do
+                        substractByPivot "$aLine" "$bLine" "$i" >> tmpGJ2
+                done < tmpGJ
+                echo "$aLine" >> tmpGJ2
+                cat tmpGJ2 > tmpGJ
+                i=$(($i-1))
+        done
+        cat tmpGJ
+        rm tmpGJ tmpGJ2
 }
+
 
 identity(){
         for i in $(seq 1 $1); do
@@ -232,20 +253,15 @@ invert(){
 	echo "$1" > tmpA
 	identity $tmpN $tmpM > tmpB
 	tmpMatrix=`paste tmpA tmpB -d' '`
-	echo "$tmpMatrix" >&2
 	tmpMatrix=`gaussJordan "$tmpMatrix"`
-	echo "$tmpMatrix" >&2
-	echo "$tmpMatrix" | cut -f$(($tmpM+1)) -d' '
+	echo "$tmpMatrix" | cut -f$(($tmpM+1))- -d' '
 	rm tmpA tmpB
 }
 
 regresion(){
 	AT=`transpon "$1"`
-	echo "$AT" >&2
 	ATA=`multiplyMatrices "$AT" "$1"`
-	echo "$ATA" >&2
 	ATA1=`invert "$ATA"`
-	echo "$ATA1" >&2
 	ATA1AT=`multiplyMatrices "$ATA1" "$AT"`
 	ATA1ATb=`multiplyMatrices "$ATA1AT" "$2"`
 	echo "$ATA1ATb"
@@ -283,10 +299,9 @@ drawLine(){
 	b=`cat "$1" | tail -n +2 | cut -f2 -d' '`
 	x=`regresion "$A" "$b"`
 	xT=`transpon "$x"`
-	firstY=`multiplyMatrices "$xT" "$minX 1"`
-	secondY=`multiplyMatrices "$xT" "$maxX 1"`
-	
-	firstY=`echo "scale=20; 1000-$firstY/$maxY*1000" | bc`
+	firstY=`multiplyMatrices "$xT" "$minX\n1"`
+	secondY=`multiplyMatrices "$xT" "$maxX\n1"`
+	firstY=`echo "scale=20; 1000-$firstY/$maxY*1000" | sed 's/--/+/' | bc`
 	secondY=`echo "scale=20; (-1)*$secondY/$maxY*1000" | bc`
 	echo "
 	<path d=\"m 100 $firstY 1000 $secondY \" style=\"fill:none;stroke-width:1px;stroke:#000\"/>
