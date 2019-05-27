@@ -163,7 +163,7 @@ substractByPivot(){
 	substractRow "$tmpV1" "$2"
 }
 
-gausElimination(){
+gaussElimination(){
 	i=1;
 	echo "$1" | 
 	while read -r aLine; do
@@ -175,11 +175,11 @@ gausElimination(){
 	done
 }
 
-gausJordan(){
-	gaus=`gausElimination $1`
+gaussJordan(){
+	gauss=`gaussElimination $1`
 
 	i=1
-	echo "$gaus" |
+	echo "$gauss" |
 	while read -r aLine; do
 		tmp=`echo "$aLine" | cut -f$i -d' '`
 		if [ $tmp -ne 0 ]; then
@@ -191,9 +191,9 @@ gausJordan(){
 	done
 
 	i=`echo "$1" | head -1 | wc -w`
-	echo "$gaus" |
+	echo "$gauss" |
 	while read -r aLine; do
-		echo "$gaus" | head -$((i-1)) |
+		echo "$gauss" | head -$((i-1)) |
 		while read -r bLine; do
 			substractByPivot "$aLine" "$bLine" $i
 		done
@@ -227,12 +227,17 @@ invert(){
 	echo "$1" > tmpA
 	identity $tmpN $tmpM > tmpB
 	tmpMatrix=`paste tmpA tmpB`
-	tmpMatrix=`gausJordan "$tmpMatrix"`
+	tmpMatrix=`gaussJordan "$tmpMatrix"`
 	echo "$tmpMatrix" | cut -f$(($tmpM+1)) -d' '
 }
 
 regresion(){
-	:
+	AT=`transpon "$1"`
+	ATA=`multiplyMatrices "$AT" "$1"`
+	ATA1=`invert "$ATA"`
+	ATA1AT=`multiplyMatricies "$ATA1" "$AT"`
+	ATA1ATb=`multiplyMatrices "$ATA1AT" "$2"`
+	echo "$ATA1ATb"
 }
 
 drawLine(){
