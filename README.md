@@ -1,6 +1,6 @@
 # linreg
 
-Crete graph from data and linear regresion with formula.
+Create graph from data and linear regresion with formula.
 Outputs in svg format.
 
 ## Usage
